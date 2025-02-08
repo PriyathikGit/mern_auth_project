@@ -15,3 +15,7 @@ const app = express();
 app.listen(3000, () => {
   console.log('server is listening on port 3000');
 });
+
+// user route
+import userRoutes from "./src/routes/user.routes.js"
+app.use("/api/user",userRoutes)
