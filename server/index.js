@@ -11,11 +11,15 @@ mongoose
   .catch((err) => console.log(err));
 
 const app = express();
-
+app.use(express.json()); // parse json on backend
 app.listen(3000, () => {
   console.log('server is listening on port 3000');
 });
 
 // user route
-import userRoutes from "./src/routes/user.routes.js"
-app.use("/api/user",userRoutes)
+import userRoutes from './src/routes/user.routes.js';
+app.use('/api/user', userRoutes);
+
+// auth routes
+import authRoutes from './src/routes/auth.routes.js';
+app.use('/api/auth', authRoutes);
