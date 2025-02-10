@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
-import { signInFailure, signInStart, signInSucces } from "../features/UserSlice"
+import { signInFailure, signInStart, signInSuccess } from "../features/UserSlice"
 import { useDispatch, useSelector } from 'react-redux';
+import OAuth from '../components/OAuth';
 
 export const Sign_In = () => {
   const [formData, setFormData] = useState({})
@@ -18,7 +19,7 @@ export const Sign_In = () => {
       dispatch(signInStart())
       const response = await axios.post("/api/auth/signin", formData);
       const data = response.data;
-      dispatch(signInSucces(data))
+      dispatch(signInSuccess(data))
       navigate("/")
     } catch (error) {
       console.log(error);
@@ -41,6 +42,7 @@ export const Sign_In = () => {
           className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-80 disabled:opacity-90'>
           {loading ? "...loading" : "Sign in"}
         </button>
+        <OAuth/>
       </form>
       <div className='flex gap-4 mt-5'>
         <p>Create an account?</p>

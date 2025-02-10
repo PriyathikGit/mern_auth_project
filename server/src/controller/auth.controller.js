@@ -36,7 +36,10 @@ const signIn = async (req, res, next) => {
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET); // sending token{if we decode it we will get the user id}
     const { password: _, ...rest } = validUser._doc;
     res
-      .cookie('access_token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000})
+      .cookie('access_token', token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+      })
       .status(200)
       .json({
         rest,
@@ -46,4 +49,56 @@ const signIn = async (req, res, next) => {
     next(error);
   }
 };
-export { signup, signIn };
+
+const googleAuth = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user) {
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const { password: _, ...rest } = user._doc;
+      res
+        .cookie('access_token', token, {
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        })
+        .status(200)
+        .json({
+          rest,
+          message: 'login successfully',
+        });
+    } else {
+      const genratedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+      console.log(genratedPassword);
+      const hashedPassword = bcrypt.hashSync(genratedPassword, 10);
+      const newUser = new User({
+        username:
+          req.body.name.split(' ').join('').toLowerCase() +
+          Math.floor(Math.random() * 10000).toString(), // converting the username to lowercase and adding random numbers
+        email: req.body.email,
+        password: hashedPassword,
+        profilePicture: req.body.photo,
+      });
+      await newUser.save();
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+      const { password: _, ...rest } = newUser._doc;
+      res
+        .cookie('access_token', token, {
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        })
+        .status(200)
+        .json({
+          rest,
+          message: 'login successfully',
+        });
+    }
+  } catch (error) {
+    console.log(error);
+    
+    next(error);
+  }
+};
+
+export { signup, signIn, googleAuth };
