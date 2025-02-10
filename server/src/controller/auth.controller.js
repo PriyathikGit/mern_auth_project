@@ -46,5 +46,4 @@ const signIn = async (req, res, next) => {
     next(error);
   }
 };
-
 export { signup, signIn };
