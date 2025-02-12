@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 dotenv.config();
 const DB_NAME = 'auth_backend';
 mongoose
@@ -12,6 +13,7 @@ mongoose
   .catch((err) => console.log(err));
 
 const app = express();
+app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,

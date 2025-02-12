@@ -4,8 +4,9 @@ import { app } from '../firebase';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { signInSuccess } from '../features/UserSlice';
-
+import { useNavigate } from "react-router-dom"
 const OAuth = () => {
+    const navigate = useNavigate()
     const dispatch = useDispatch();
     const handleGoogle = async () => {
         try {
@@ -19,6 +20,7 @@ const OAuth = () => {
             })
             const data = res.data;
             dispatch(signInSuccess(data));
+            navigate('/')
         } catch (error) {
             console.log(error);
         }

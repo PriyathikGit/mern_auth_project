@@ -2,6 +2,8 @@ import { User } from '../model/user.model.js';
 import bcrypt from 'bcryptjs';
 import { errorHandler } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
+import { isValidObjectId } from 'mongoose';
+import { deleteOnCloudinary, uploadOnCloudinary } from '../utils/Cloudinary.js';
 const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -70,7 +72,6 @@ const googleAuth = async (req, res) => {
       const genratedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-      console.log(genratedPassword);
       const hashedPassword = bcrypt.hashSync(genratedPassword, 10);
       const newUser = new User({
         username:
@@ -96,9 +97,71 @@ const googleAuth = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    
     next(error);
   }
 };
 
-export { signup, signIn, googleAuth };
+const uploadDetails = async (req, res, next) => {
+  const { profilePicture } = req.user;
+  const { userId } = req.params;
+  const { email, username, password } = req.body;
+
+  try {
+    if (!isValidObjectId(userId)) {
+      return next(errorHandler(401, 'Not a valid user ID'));
+    }
+
+    // Handle profile picture upload if a file is provided
+    if (req.file) {
+      const localImagePath = req.file?.path;
+      if (!localImagePath) {
+        return next(errorHandler(401, 'Cannot find file path'));
+      }
+
+      const uploadedImage = await uploadOnCloudinary(localImagePath);
+      if (!uploadedImage) {
+        return next(
+          errorHandler(400, 'Profile picture not uploaded on Cloudinary')
+        );
+      }
+
+      // Delete previous profile picture if it's not the default one
+      if (
+        profilePicture &&
+        !profilePicture.includes(
+          'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+        )
+      ) {
+        await deleteOnCloudinary(profilePicture);
+      }
+
+      req.user.profilePicture = uploadedImage.url;
+    }
+
+    // Update user details if provided
+    if (username) req.user.username = username;
+    if (email) req.user.email = email;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      req.user.password = hashedPassword;
+    }
+    const rest = {
+      _id: req.user._id,
+      profilePicture: req.user.profilePicture,
+      username: req.user.username,
+      email: req.user.email,
+    };
+    await req.user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      rest,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export { signup, signIn, googleAuth, uploadDetails };
