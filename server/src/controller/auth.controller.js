@@ -164,4 +164,8 @@ const uploadDetails = async (req, res, next) => {
   }
 };
 
-export { signup, signIn, googleAuth, uploadDetails };
+const signOut = async (req, res) => {
+  res.clearCookie("access_token").status(200).json("signout succesfully!!")
+};
+
+export { signup, signIn, googleAuth, uploadDetails, signOut };

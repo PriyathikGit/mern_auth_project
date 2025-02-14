@@ -4,6 +4,7 @@ import {
   signup,
   googleAuth,
   uploadDetails,
+  signOut
 } from '../controller/auth.controller.js';
 import { upload } from '../middleware/Multer.middleware.js';
 import { verifyJwt } from '../middleware/verifyJwt.js';
@@ -19,4 +20,6 @@ router.patch(
   upload.single('profilePicture'),
   uploadDetails
 );
+router.get('/signOut', signOut);
+
 export default router;

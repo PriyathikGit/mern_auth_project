@@ -1,7 +1,10 @@
 import React, { useRef, useState } from 'react'
 import { useSelector, useDispatch } from "react-redux"
 import axios from "axios"
-import { updateUserFailure, updateUserStart, updateUserSuccess } from "../features/UserSlice"
+import {
+  deleteUserFailure, deleteUserStart, deleteUserSuccess,
+  updateUserFailure, updateUserStart, updateUserSuccess, signOut
+} from "../features/UserSlice"
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector(state => state.user)
@@ -50,6 +53,29 @@ const Profile = () => {
       dispatch(updateUserFailure(error))
     }
   }
+
+  const handleDelete = async () => {
+    try {
+      dispatch(deleteUserStart())
+      const res = await axios.delete(`/api/user/delete/${userId}`)
+      console.log(res);
+      const data = res.data;
+      dispatch(deleteUserSuccess(data))
+    } catch (error) {
+      console.log(error)
+      dispatch(deleteUserFailure(error.response.data.message))
+    }
+  }
+  const handleSignOut = async () => {
+    try {
+      await axios.get('/api/auth/signOut');
+      dispatch(signOut())
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
@@ -57,7 +83,7 @@ const Profile = () => {
         <input type="file" ref={fileRef} hidden accept='image/*' onChange={handleUploadImage} />
         <img
           className='self-center w-24 h-24 object-cover rounded-full cursor-pointer my-2'
-          src={currentUser.rest.profilePicture}
+          src={currentUser.rest?.profilePicture}
           alt="profilePicture"
           id='profilePicture'
           onClick={() => fileRef.current.click()}
@@ -79,11 +105,13 @@ const Profile = () => {
         />
         <button
           className='bg-slate-700 p-3 rounded-lg text-white uppercase cursor-pointer hover:opacity-90 disabled:opacity-50'>
-          {loading ? 'updating' : 'update'}</button>
+          {loading ? 'loading...' : 'update'}</button>
       </form>
       <div className='flex justify-between mt-4'>
-        <span className='text-red-700 cursor-pointer'>Delete Account</span>
-        <span className='text-red-700 cursor-pointer'>Sign out</span>
+        <span
+          className='text-red-700 cursor-pointer'
+          onClick={handleDelete}>Delete Account</span>
+        <span className='text-red-700 cursor-pointer' onClick={handleSignOut}>Sign out</span>
       </div>
       {error && <p className='text-red-700 mt-5'>{error}</p>}
       {successs && <p className='text-green-500 mt-5'>updated successfully</p>}
