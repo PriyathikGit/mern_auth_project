@@ -14,8 +14,6 @@ mongoose
   })
   .catch((err) => console.log(err));
 
-const __dirName = path.resolve();
-
 const app = express();
 app.use(cookieParser());
 app.use(
@@ -47,8 +45,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use(express.static(path.join(__dirName, '/client/dist')));
-
+const __dirName = path.resolve();
+app.use(express.static(path.join(__dirName, '../client/dist')));
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirName, '../client/dist/index.html',));
+  res.sendFile(path.join(__dirName, '../client/dist/index.html'));
 });
